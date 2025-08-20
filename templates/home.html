@@ -207,6 +207,8 @@
   </div>
 
   <script>
+      const API_KEY = "d9a4d8c7be1e6a4f04a5b0f8a4bc852e";
+
     // theme
     (function initTheme(){
       const root=document.documentElement;
@@ -226,14 +228,12 @@
       const v=localStorage.getItem('ow_key');
       if(v) document.getElementById('apikey').value='••••••••';
     })();
-    function saveKey(){
-      const el=document.getElementById('apikey');
-      const val=el.value.trim();
-      if(!val || val==='••••••••') return;
-      localStorage.setItem('ow_key', val);
-      el.value='••••••••';
-      alert('Saved!');
-    }
+    
+    function saveKey() {
+    const val = "d9a4d8c7be1e6a4f04a5b0f8a4bc852e"; // your API key
+    localStorage.setItem("ow_key", val);
+    alert("API key saved to browser storage!");
+  }
 
     // helpers
     function $(id){ return document.getElementById(id); }
