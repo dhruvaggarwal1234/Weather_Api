@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weather · OpenWeather (Modern UI)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* THEME */
+    :root {
+      --bg: #0b0f14; --bg-2:#0f141b; --fg:#eaf2ff; --muted:#b6c2d1;
+      --brand1:#00dfd8; --brand2:#007cf0; --danger:#ff5d5d;
+      --glass: rgba(255,255,255,.06); --stroke: rgba(255,255,255,.14);
+      --r-xl:18px; --r-md:12px; --shadow:0 10px 35px rgba(0,0,0,.35);
+      --gap:18px; --w:1060px;
+    }
+    [data-theme="light"]{
+      --bg:#f6f8fb; --bg-2:#eef2f8; --fg:#0b0f14; --muted:#3b4a5c;
+      --glass:rgba(255,255,255,.75); --stroke:rgba(10,16,24,.1);
+      --shadow:0 12px 32px rgba(18,38,63,.18);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(0,124,240,.22), transparent 60%),
+                  radial-gradient(1000px 600px at 90% 20%, rgba(0,223,216,.18), transparent 60%),
+                  var(--bg);
+      color:var(--fg); padding:28px 16px 40px;
+    }
+    .container{max-width:var(--w); margin:0 auto}
+    .stack{display:grid; gap:var(--gap)}
+    .glass{background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r-xl);
+           box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
+           backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px)}
+    /* HEADER */
+    .header{padding:20px; display:flex; align-items:center; justify-content:space-between; gap:16px}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px}
+    .badge{width:36px; height:36px; border-radius:10px;
+           background:linear-gradient(135deg,var(--brand1),var(--brand2))}
+    .toggle{display:inline-flex; gap:8px; padding:10px 12px; border-radius:12px; cursor:pointer;
+            border:1px solid var(--stroke); background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))}
+    .toggle input{display:none}
+    /* SEARCH */
+    .card{padding:22px}
+    .grid{display:grid; gap:14px}
+    @media(min-width:720px){ .grid{grid-template-columns:1fr auto auto} }
+    .field{display:grid; gap:8px}
+    .label{color:var(--muted); font-size:.95rem}
+    .input, .select{
+      border-radius:var(--r-md); border:1px solid var(--stroke);
+      background:rgba(255,255,255,.08); color:var(--fg); padding:14px;
+      outline:none; font-size:1rem;
+    }
+    .input::placeholder{color:var(--muted)}
+    .input:focus, .select:focus{border-color:var(--brand1); box-shadow:0 0 0 .2rem rgba(0,223,216,.25)}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:14px 16px; border-radius:var(--r-md); border:1px solid var(--stroke);
+      font-weight:700; letter-spacing:.2px; cursor:pointer; user-select:none; color:var(--fg);
+      background:linear-gradient(135deg,var(--brand1),var(--brand2));
+    }
+    .btn.secondary{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)); font-weight:600}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    .hint{color:var(--muted); font-size:.92rem}
+    .rowx{display:grid; grid-template-columns:1fr auto; gap:8px}
+    /* TOAST */
+    .toast{padding:14px 16px; border-radius:12px; border:1px solid color-mix(in oklab,var(--danger) 45%, var(--fg) 0%);
+           background:color-mix(in oklab,var(--danger) 20%, transparent)}
+    /* HERO */
+    .hero{padding:22px; display:grid; gap:10px}
+    .hero-top{display:grid; gap:10px}
+    @media(min-width:680px){ .hero-top{grid-template-columns:1fr auto; align-items:center} }
+    .title{font-size:clamp(1.4rem,1.2rem + 1vw,2rem); font-weight:800}
+    .temp{font-size:clamp(1.5rem,1.2rem + 1.8vw,2.4rem); font-weight:800; display:flex; align-items:center; gap:10px}
+    .cond{color:var(--muted); font-weight:600}
+    .icon{width:56px; height:56px; object-fit:contain; filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}
+    .subtle{color:var(--muted); font-size:.95rem}
+    /* STATS */
+    .stats{display:grid; gap:var(--gap)}
+    @media(min-width:860px){ .stats{grid-template-columns:repeat(3,1fr)} }
+    .panel{padding:18px; border-radius:var(--r-xl); border:1px solid var(--stroke);
+           background:var(--glass); box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.06)}
+    .panel h3{margin:0 0 12px; font-size:1rem; color:var(--muted)}
+    .kv{display:grid; gap:6px}
+    .kv .rowx{grid-template-columns:1fr auto}
+    .strong{font-weight:700}
+    .bar{height:10px; border-radius:999px; background:rgba(255,255,255,.12);
+         overflow:hidden; border:1px solid var(--stroke)}
+    .bar>i{display:block; height:100%; width:var(--pct,0%); background:linear-gradient(90deg,var(--brand1),var(--brand2)); transition:width .6s ease}
+    /* COMPASS */
+    .compass{--deg:0; width:120px; height:120px; border-radius:50%; border:1px solid var(--stroke);
+             background:radial-gradient(circle at 50% 55%,rgba(255,255,255,.15),rgba(255,255,255,0) 60%), var(--glass);
+             position:relative; margin:6px auto 0; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.06)}
+    .compass::before,.compass::after{content:""; position:absolute; inset:50% auto auto 50%; width:0; height:0; transform-origin:0 0}
+    .compass::before{border-left:2px solid transparent; border-right:2px solid transparent; border-bottom:48px solid color-mix(in oklab,var(--brand2) 70%, var(--brand1));
+                     transform:translate(-50%,-48px) rotate(var(--deg))}
+    .compass::after{border-left:2px solid transparent; border-right:2px solid transparent; border-top:22px solid rgba(255,255,255,.7);
+                    transform:translate(-50%,0) rotate(calc(var(--deg) + 180deg)); opacity:.8}
+    .compass-n{position:absolute; top:6px; left:50%; transform:translateX(-50%); font-size:.75rem; color:var(--muted)}
+    /* MISC */
+    .footer{text-align:center; color:var(--muted); margin-top:6px; font-size:.92rem}
+    .skeleton{border-radius:10px; height:16px; width:16px; background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.16),rgba(255,255,255,.06));
+              background-size:200% 100%; animation:shimmer 1.2s infinite}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    kbd{padding:2px 6px; border:1px solid var(--stroke); border-bottom-width:2px; border-radius:6px; font-weight:700; background:rgba(255,255,255,.04)}
+  </style>
+</head>
+<body>
+  <div class="container stack">
+    <!-- Header -->
+    <header class="glass header">
+      <div class="brand"><span class="badge" aria-hidden="true"></span> Weather</div>
+      <label class="toggle" aria-label="Toggle theme"><input id="themeSwitch" type="checkbox" /><span>🌙 / ☀️ Theme</span></label>
+    </header>
+
+    <!-- Search + API key -->
+    <section class="glass card">
+
+        
+      <hr style="border:none;border-top:1px dashed var(--stroke); margin:16px 0">
+      <form class="grid" onsubmit="return handleSearch(event)" novalidate>
+        <div class="field">
+          <label class="label" for="query">Location</label>
+          <input id="query" class="input" type="text" placeholder="Delhi · 94105 · 28.61,77.20" autocomplete="off" required />
+          <div class="hint">City, ZIP/postcode, or <code>lat,lon</code>. Press <kbd>/</kbd> to focus.</div>
+        </div>
+        <div class="field">
+          <label class="label" for="units">Units</label>
+          <select id="units" class="select">
+            <option value="metric" selected>Metric (°C, m/s)</option>
+            <option value="imperial">Imperial (°F, mph)</option>
+            <option value="standard">Standard (K)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="lang">Language</label>
+          <select id="lang" class="select">
+            <option value="en" selected>English</option>
+            <option value="hi">हिन्दी</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+          </select>
+        </div>
+        <button id="go" class="btn" type="submit">
+          <span id="spin" class="skeleton" style="display:none"></span> Get Weather
+        </button>
+        <button class="btn secondary" type="button" onclick="useGeolocation()">Use My Location</button>
+      </form>
+    </section>
+
+    <!-- Error -->
+    <section id="error" class="toast" style="display:none"></section>
+
+    <!-- Result: hero -->
+    <section id="hero" class="glass hero" style="display:none">
+      <div class="hero-top">
+        <div>
+          <div class="title">Current Weather in <span id="placeName"></span></div>
+          <div class="cond" id="condText"></div>
+        </div>
+        <div class="temp" id="tempLine">--</div>
+      </div>
+      <div class="subtle" id="updated"></div>
+    </section>
+
+    <!-- Stats -->
+    <section id="stats" class="stats" style="display:none">
+      <div class="panel">
+        <h3>Location & Time</h3>
+        <div class="kv">
+          <div class="rowx"><span>Region</span><span class="strong" id="region">—</span></div>
+          <div class="rowx"><span>Latitude</span><span class="strong" id="lat">—</span></div>
+          <div class="rowx"><span>Longitude</span><span class="strong" id="lon">—</span></div>
+          <div class="rowx"><span>Time Zone Offset</span><span class="strong" id="tz">—</span></div>
+          <div class="rowx"><span>Local Time</span><span class="strong" id="localTime">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Atmosphere</h3>
+        <div class="kv">
+          <div class="rowx"><span>Pressure</span><span class="strong" id="pressure">—</span></div>
+          <div class="rowx"><span>Humidity</span><span class="strong" id="humidity">—</span></div>
+          <div class="bar" style="--pct:0%" id="humBar"><i></i></div>
+          <div class="rowx"><span>Visibility</span><span class="strong" id="visibility">—</span></div>
+          <div class="rowx"><span>Cloudiness</span><span class="strong" id="clouds">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Comfort & Wind</h3>
+        <div class="kv">
+          <div class="rowx"><span>Feels Like</span><span class="strong" id="feels">—</span></div>
+          <div class="rowx"><span>Wind</span><span class="strong" id="wind">—</span></div>
+          <div class="rowx"><span>Gusts</span><span class="strong" id="gusts">—</span></div>
+          <div class="rowx"><span>Direction</span><span class="strong" id="windDir">—</span></div>
+          <div class="compass" id="compass" style="--deg:0deg"><div class="compass-n">N</div></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">Built for OpenWeather • Docs: Current Weather & Geocoding</p>
+  </div>
+
+  <script>
+    // theme
+    (function initTheme(){
+      const root=document.documentElement;
+      const saved=localStorage.getItem('theme');
+      if(saved) root.setAttribute('data-theme',saved);
+      const sw=document.getElementById('themeSwitch');
+      sw.checked = (root.getAttribute('data-theme')!=='dark');
+      sw.addEventListener('change',()=> {
+        const t=sw.checked?'light':'dark';
+        root.setAttribute('data-theme',t);
+        localStorage.setItem('theme',t);
+      });
+    })();
+
+    // api key persist
+    (function initKey(){
+      const v=localStorage.getItem('ow_key');
+      if(v) document.getElementById('apikey').value='••••••••';
+    })();
+    function saveKey(){
+      const el=document.getElementById('apikey');
+      const val=el.value.trim();
+      if(!val || val==='••••••••') return;
+      localStorage.setItem('ow_key', val);
+      el.value='••••••••';
+      alert('Saved!');
+    }
+
+    // helpers
+    function $(id){ return document.getElementById(id); }
+    function show(id, yes=true){ $(id).style.display = yes?'':'none'; }
+    function setBar(id, pct){ $(id).style.setProperty('--pct', Math.max(0,Math.min(100,pct)) + '%'); }
+    function fmtTemp(t, units){ return units==='imperial' ? `${Math.round(t)}°F` : (units==='metric' ? `${Math.round(t)}°C` : `${Math.round(t)}K`); }
+    function fmtSpeed(s, units){ return units==='imperial'? `${s} mph` : (units==='metric'? `${s} m/s` : `${s} m/s`); } // OWM: m/s in metric/standard
+    function fmtVis(v){ return v>=1000? `${(v/1000).toFixed(1)} km` : `${v} m`; }
+
+    // keyboard shortcut
+    window.addEventListener('keydown',(e)=>{
+      if(e.key==='/' && ['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)===-1){
+        e.preventDefault(); $('query').focus();
+      }
+    });
+
+    // geolocation
+    function useGeolocation(){
+      if(!navigator.geolocation){ alert('Geolocation not supported.'); return; }
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const {latitude:lat, longitude:lon}=pos.coords;
+        $('query').value = `${lat.toFixed(4)},${lon.toFixed(4)}`;
+        $('query').focus();
+      }, err=>{ alert('Unable to retrieve location.'); console.error(err); },
+      {enableHighAccuracy:true, timeout:8000, maximumAge:0});
+    }
+
+    async function handleSearch(e){
+      e.preventDefault();
+      const key = localStorage.getItem('ow_key');
+      if(!key){ alert('Please save your OpenWeather API key first.'); return false; }
+
+      const q = $('query').value.trim();
+      const units = $('units').value;
+      const lang = $('lang').value;
+      $('spin').style.display='inline-block'; $('go').disabled=true;
+      show('error', false); show('hero', false); show('stats', false);
+
+      try{
+        let lat, lon, placeLabel='', region='';
+
+        // Accept lat,lon directly
+        const m = q.match(/^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$/);
+        if(m){
+          lat=parseFloat(m[1]); lon=parseFloat(m[3]);
+          placeLabel = `(${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        }else{
+          // Geocoding API (direct)
+          const geoURL = new URL('https://api.openweathermap.org/geo/1.0/direct');
+          geoURL.searchParams.set('q', q);
+          geoURL.searchParams.set('limit', '1');
+          geoURL.searchParams.set('appid', key);
+
+          const gres = await fetch(geoURL);
+          if(!gres.ok) throw new Error('Geocoding failed');
+          const g = await gres.json();
+          if(!Array.isArray(g) || g.length===0) throw new Error('No matching location found');
+          lat = g[0].lat; lon = g[0].lon;
+          placeLabel = `${g[0].name}${g[0].state? ', '+g[0].state:''}, ${g[0].country}`;
+          region = `${g[0].state? g[0].state+' • ':''}${g[0].country}`;
+        }
+
+        // Current Weather
+        const wURL = new URL('https://api.openweathermap.org/data/2.5/weather');
+        wURL.searchParams.set('lat', lat);
+        wURL.searchParams.set('lon', lon);
+        wURL.searchParams.set('units', units);
+        wURL.searchParams.set('lang', lang);
+        wURL.searchParams.set('appid', key);
+        const wres = await fetch(wURL);
+        const w = await wres.json();
+        if(!wres.ok) throw new Error(w?.message || 'Failed to fetch weather');
+
+        // Compose UI
+        const name = w.name || placeLabel;
+        const weather = w.weather?.[0] || {};
+        const main = w.main || {};
+        const wind = w.wind || {};
+        const clouds = w.clouds || {};
+        const sys = w.sys || {};
+        const tzOffset = w.timezone || 0;
+
+        // Top line
+        $('placeName').textContent = name;
+        $('condText').textContent = weather.description ? weather.description[0].toUpperCase()+weather.description.slice(1) : '—';
+        const tempLine = `${fmtTemp(main.temp, units)} / ${fmtTemp(units==='imperial'? (main.temp-32)*5/9 : (units==='metric'? main.temp*9/5+32 : (main.temp-273.15)*9/5+32), 'imperial')}`;
+        // icon
+        const icon = weather.icon ? `<img class="icon" src="https://openweathermap.org/img/wn/${weather.icon}@2x.png" alt="${weather.description||''}">` : '';
+        $('tempLine').innerHTML = `${tempLine} ${icon}`;
+        const updatedUTC = (w.dt||0)*1000;
+        const local = new Date(updatedUTC + tzOffset*1000);
+        $('updated').textContent = `Last updated: ${local.toLocaleString()}`;
+
+        // Location panel
+        $('region').textContent = region || `${sys.country||'—'}`;
+        $('lat').textContent = (w.coord?.lat ?? lat).toFixed(4)+'°';
+        $('lon').textContent = (w.coord?.lon ?? lon).toFixed(4)+'°';
+        $('tz').textContent = (tzOffset>=0?'+':'') + (tzOffset/3600);
+        $('localTime').textContent = local.toLocaleString();
+
+        // Atmosphere
+        $('pressure').textContent = `${main.pressure ?? '—'} hPa`;
+        $('humidity').textContent = `${main.humidity ?? '—'}%`;
+        setBar('humBar', main.humidity ?? 0);
+        $('visibility').textContent = w.visibility!=null ? fmtVis(w.visibility) : '—';
+        $('clouds').textContent = clouds.all!=null ? `${clouds.all}%` : '—';
+
+        // Comfort & wind
+        const feels = main.feels_like!=null ? fmtTemp(main.feels_like, units) : '—';
+        $('feels').textContent = feels;
+        $('wind').textContent = (wind.speed!=null ? fmtSpeed(wind.speed, units) : '—');
+        $('gusts').textContent = (wind.gust!=null ? fmtSpeed(wind.gust, units) : '—');
+        $('windDir').textContent = (wind.deg!=null ? `${wind.deg}°` : '—');
+        $('compass').style.setProperty('--deg', (wind.deg||0)+'deg');
+
+        // Show sections
+        show('hero', true); show('stats', true);
+      }catch(err){
+        $('error').textContent = err.message || 'Something went wrong';
+        show('error', true);
+      }finally{
+        $('spin').style.display='none'; $('go').disabled=false;
+      }
+      return false;
+    }
+  </script>
+</body>
+</html>
