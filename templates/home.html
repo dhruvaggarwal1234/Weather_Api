@@ -118,8 +118,6 @@
 
     <!-- Search + API key -->
     <section class="glass card">
-
-        
       <hr style="border:none;border-top:1px dashed var(--stroke); margin:16px 0">
       <form class="grid" onsubmit="return handleSearch(event)" novalidate>
         <div class="field">
@@ -207,7 +205,7 @@
   </div>
 
   <script>
-      const API_KEY = "d9a4d8c7be1e6a4f04a5b0f8a4bc852e";
+    const API_KEY = "d9a4d8c7be1e6a4f04a5b0f8a4bc852e";
 
     // theme
     (function initTheme(){
@@ -226,14 +224,14 @@
     // api key persist
     (function initKey(){
       const v=localStorage.getItem('ow_key');
-      if(v) document.getElementById('apikey').value='••••••••';
+      if(v) document.getElementById('apikey') ? document.getElementById('apikey').value='••••••••' : null;
     })();
     
     function saveKey() {
-    const val = "d9a4d8c7be1e6a4f04a5b0f8a4bc852e"; // your API key
-    localStorage.setItem("ow_key", val);
-    alert("API key saved to browser storage!");
-  }
+      const val = "d9a4d8c7be1e6a4f04a5b0f8a4bc852e"; // your API key
+      localStorage.setItem("ow_key", val);
+      alert("API key saved to browser storage!");
+    }
 
     // helpers
     function $(id){ return document.getElementById(id); }
@@ -260,6 +258,17 @@
       }, err=>{ alert('Unable to retrieve location.'); console.error(err); },
       {enableHighAccuracy:true, timeout:8000, maximumAge:0});
     }
+
+    // Set current IST time on page load
+    (function setISTTime(){
+      const options = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      const istTime = new Date().toLocaleTimeString('en-US', options);
+      $('localTime').textContent = istTime;
+      // Update time every second
+      setInterval(() => {
+        $('localTime').textContent = new Date().toLocaleTimeString('en-US', options);
+      }, 1000);
+    })();
 
     async function handleSearch(e){
       e.preventDefault();
@@ -332,7 +341,7 @@
         $('lat').textContent = (w.coord?.lat ?? lat).toFixed(4)+'°';
         $('lon').textContent = (w.coord?.lon ?? lon).toFixed(4)+'°';
         $('tz').textContent = (tzOffset>=0?'+':'') + (tzOffset/3600);
-        $('localTime').textContent = local.toLocaleString();
+        // Local time is already set by setISTTime()
 
         // Atmosphere
         $('pressure').textContent = `${main.pressure ?? '—'} hPa`;
@@ -347,7 +356,7 @@
         $('wind').textContent = (wind.speed!=null ? fmtSpeed(wind.speed, units) : '—');
         $('gusts').textContent = (wind.gust!=null ? fmtSpeed(wind.gust, units) : '—');
         $('windDir').textContent = (wind.deg!=null ? `${wind.deg}°` : '—');
-        $('compass').style.setProperty('--deg', (wind.deg||0)+'deg');
+        $('compass').style.setProperty('--deg', '106deg');
 
         // Show sections
         show('hero', true); show('stats', true);
@@ -360,5 +369,6 @@
       return false;
     }
   </script>
-</body>
-</html>
+  </body>
+  </html>
+  

@@ -15,16 +15,16 @@ app = Flask(__name__)
 def home():
     return render_template('home.html')
 
-@app.route('/predict_weather', methods=['POST'])
-def predict_weather():
-    if request.method == 'POST':
-        location = request.form.get('location')
-        try:
-            response = fetch_weather_data(location)
-            weather_data = parse_weather_data(response)
-            return render_template('home.html', **weather_data)
-        except Exception:
-            return render_template('home.html', error='Please enter a correct Place name...')
+# @app.route('/predict_weather', methods=['POST'])
+# def predict_weather():
+#     if request.method == 'POST':
+#         location = request.form.get('location')
+#         try:
+#             response = fetch_weather_data(location)
+#             weather_data = parse_weather_data(response)
+#             return render_template('home.html', **weather_data)
+#         except Exception:
+#             return render_template('home.html', error='Please enter a correct Place name...')
 
 def fetch_weather_data(location):
     params = {
